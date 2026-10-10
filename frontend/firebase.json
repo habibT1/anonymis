@@ -1,0 +1,58 @@
+{
+  "hosting": {
+    "public": "dist/app-chat/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/auth/**",
+        "run": {
+          "serviceId": "chat-app",
+          "region": "northamerica-northeast1"
+        }
+      },
+      {
+        "source": "/status",
+        "run": {
+          "serviceId": "chat-app",
+          "region": "northamerica-northeast1"
+        }
+      },
+      {
+        "source": "/status/**",
+        "run": {
+          "serviceId": "chat-app",
+          "region": "northamerica-northeast1"
+        }
+      },
+      {
+        "source": "/messages",
+        "run": {
+          "serviceId": "chat-app",
+          "region": "northamerica-northeast1"
+        }
+      },
+      {
+        "source": "/messages/**",
+        "run": {
+          "serviceId": "chat-app",
+          "region": "northamerica-northeast1"
+        }
+      },
+      {
+        "source": "/notifications",
+        "run": {
+          "serviceId": "chat-app",
+          "region": "northamerica-northeast1"
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

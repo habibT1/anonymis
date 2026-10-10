@@ -1,0 +1,7 @@
+build
+.gradle
+*.log
+firebase-key.json
+firebase-production-key.json
+*-key.json
+cookies.txt

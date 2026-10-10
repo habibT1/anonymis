@@ -1,0 +1,191 @@
+import { Injectable, signal } from '@angular/core';
+
+export type Lang = 'fr' | 'en';
+
+const STORAGE_KEY = 'app-chat-lang';
+
+const TRANSLATIONS: Record<Lang, Record<string, string>> = {
+  fr: {
+    who: 'qui',
+    online: 'en ligne',
+    away: 'absent',
+    offline: 'hors ligne',
+    quit: '/quitter',
+    noUsers: '// aucun utilisateur',
+    noMessages: '// aucun message pour l’instant',
+    writeMessage: 'Écrire un message…',
+    send: 'envoyer',
+    chooseImage: 'choisir une image',
+    imageSelected: 'image sélectionnée',
+    removeImage: "retirer l'image",
+    sentImage: 'Image envoyée',
+    preview: 'Aperçu',
+    welcome: 'bienvenue',
+    user: 'utilisateur',
+    pass: 'mdp',
+    login: '> connexion',
+    connecting: 'connexion',
+    showPassword: 'Afficher le mot de passe',
+    hidePassword: 'Masquer le mot de passe',
+    usernameRequired: "erreur: nom d'utilisateur requis",
+    passwordRequired: 'erreur: mot de passe requis',
+    invalidCredentials: "Nom d'utilisateur ou mot de passe invalide",
+    connectionError: 'Problème de connexion',
+    toggleLangLabel: 'Switch to English',
+    // --- Anonymis ---
+    documents: 'documents',
+    importPdf: '+ importer un PDF',
+    importing: 'import…',
+    dropHint: 'ou glisser-déposer ici',
+    noDocuments: '// aucun document',
+    pages: 'p.',
+    needsOcr: 'scanné : OCR pas encore géré',
+    includeDoc: 'Inclure ce document dans la question',
+    deleteDoc: 'Supprimer le document',
+    localOnly: 'Le texte est extrait sur ce serveur. Seul le texte anonymisé est envoyé à l’IA.',
+    askPlaceholder: 'Poser une question sur vos documents…',
+    previewBtn: 'aperçu',
+    previewHint: 'Voir ce que l’IA recevrait, sans l’envoyer',
+    newConversation: 'nouvelle conversation',
+    level: 'masquage',
+    levelStandard: 'standard',
+    levelStrict: 'strict',
+    levelHint: 'Strict masque aussi les organisations et les lieux. Changer le niveau démarre une nouvelle conversation.',
+    masked: 'données masquées',
+    noLeak: '0 fuite',
+    aiView: 'vue IA',
+    hideAiView: 'masquer la vue IA',
+    sentToAi: 'ce que l’IA a reçu',
+    receivedFromAi: 'ce que l’IA a répondu',
+    wouldSend: 'ce que l’IA recevrait',
+    previewNotice: 'Aperçu : rien n’a été envoyé à l’IA.',
+    sendForReal: 'envoyer pour de vrai',
+    thinking: 'anonymisation puis réponse de l’IA…',
+    blockedTitle: 'Envoi bloqué par LeakGuard',
+    blockedText: 'Une donnée sensible était encore présente : rien n’a été envoyé à l’IA. Reformulez sans la donnée.',
+    errorTitle: 'Erreur',
+    unknownTokens: 'jetons inconnus inventés par l’IA',
+    emptyTitle: 'Posez une question sur vos documents',
+    emptyText: 'Importez un PDF à gauche, puis demandez par exemple « Résume ce contrat » ou « Quelles sont les conditions de résiliation ? ». Les noms, e-mails, NAS, IBAN et clés d’API sont remplacés par des jetons avant d’être envoyés à l’IA.',
+    localModel: 'local · rien ne sort',
+    cloudModel: 'API · texte anonymisé seulement',
+    you: 'vous',
+    assistant: 'assistant',
+    redactedPdf: 'PDF caviardé',
+    redactHint: 'Télécharger le PDF avec les données sensibles supprimées (mêmes jetons que la conversation)',
+    answerPdf: 'exporter en PDF',
+    sensitiveNames: 'noms sensibles',
+    edit: 'modifier',
+    alwaysMask: 'Toujours masquer (une ligne par terme, « terme : CATÉGORIE »)',
+    neverMask: 'Ne jamais masquer (une ligne par terme)',
+    alwaysMaskShort: 'à masquer',
+    neverMaskShort: 'jamais masqués',
+    listsHint: 'Gardé dans ce navigateur. Enregistrer démarre une nouvelle conversation.',
+    cancel: 'annuler',
+    save: 'enregistrer',
+  },
+  en: {
+    who: 'who',
+    online: 'online',
+    away: 'away',
+    offline: 'offline',
+    quit: '/quit',
+    noUsers: '// no users',
+    noMessages: '// no messages yet',
+    writeMessage: 'Write a message…',
+    send: 'send',
+    chooseImage: 'choose an image',
+    imageSelected: 'image selected',
+    removeImage: 'remove image',
+    sentImage: 'Sent image',
+    preview: 'Preview',
+    welcome: 'welcome',
+    user: 'user',
+    pass: 'pass',
+    login: '> login',
+    connecting: 'connecting',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    usernameRequired: 'error: username required',
+    passwordRequired: 'error: password required',
+    invalidCredentials: 'Invalid username or password',
+    connectionError: 'Connection problem',
+    toggleLangLabel: 'Passer en français',
+    // --- Anonymis ---
+    documents: 'documents',
+    importPdf: '+ import a PDF',
+    importing: 'importing…',
+    dropHint: 'or drag and drop here',
+    noDocuments: '// no documents',
+    pages: 'p.',
+    needsOcr: 'scanned: OCR not supported yet',
+    includeDoc: 'Include this document in the question',
+    deleteDoc: 'Delete document',
+    localOnly: 'Text is extracted on this server. Only anonymized text is sent to the AI.',
+    askPlaceholder: 'Ask a question about your documents…',
+    previewBtn: 'preview',
+    previewHint: 'See what the AI would receive, without sending it',
+    newConversation: 'new conversation',
+    level: 'masking',
+    levelStandard: 'standard',
+    levelStrict: 'strict',
+    levelHint: 'Strict also masks organizations and places. Changing the level starts a new conversation.',
+    masked: 'items masked',
+    noLeak: '0 leaks',
+    aiView: 'AI view',
+    hideAiView: 'hide AI view',
+    sentToAi: 'what the AI received',
+    receivedFromAi: 'what the AI answered',
+    wouldSend: 'what the AI would receive',
+    previewNotice: 'Preview: nothing was sent to the AI.',
+    sendForReal: 'send for real',
+    thinking: 'anonymizing, then waiting for the AI…',
+    blockedTitle: 'Blocked by LeakGuard',
+    blockedText: 'Sensitive data was still present: nothing was sent to the AI. Rephrase without it.',
+    errorTitle: 'Error',
+    unknownTokens: 'unknown tokens invented by the AI',
+    emptyTitle: 'Ask a question about your documents',
+    emptyText: 'Import a PDF on the left, then ask for example “Summarize this contract” or “What are the termination terms?”. Names, emails, SINs, IBANs and API keys are replaced with tokens before anything is sent to the AI.',
+    localModel: 'local · nothing leaves',
+    cloudModel: 'API · anonymized text only',
+    you: 'you',
+    assistant: 'assistant',
+    redactedPdf: 'redacted PDF',
+    redactHint: 'Download the PDF with sensitive data removed (same tokens as the conversation)',
+    answerPdf: 'export PDF',
+    sensitiveNames: 'sensitive names',
+    edit: 'edit',
+    alwaysMask: 'Always mask (one term per line, “term : CATEGORY”)',
+    neverMask: 'Never mask (one term per line)',
+    alwaysMaskShort: 'masked',
+    neverMaskShort: 'never masked',
+    listsHint: 'Stored in this browser. Saving starts a new conversation.',
+    cancel: 'cancel',
+    save: 'save',
+  },
+};
+
+@Injectable({ providedIn: 'root' })
+export class LanguageService {
+  lang = signal<Lang>(this.readInitialLang());
+
+  private readInitialLang(): Lang {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === 'en' || stored === 'fr' ? stored : 'fr';
+  }
+
+  toggle(): void {
+    const next: Lang = this.lang() === 'fr' ? 'en' : 'fr';
+    this.lang.set(next);
+    localStorage.setItem(STORAGE_KEY, next);
+  }
+
+  t(key: string | null | undefined): string {
+    if (!key) return '';
+    return TRANSLATIONS[this.lang()][key] ?? key;
+  }
+
+  locale(): string {
+    return this.lang() === 'fr' ? 'fr-FR' : 'en-US';
+  }
+}

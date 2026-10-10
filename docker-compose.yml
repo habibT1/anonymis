@@ -1,0 +1,31 @@
+# Lance Anonymis en entier : docker compose up --build
+# Prérequis : un fichier .env à la racine (voir .env.example) et backend/firebase-key.json.
+services:
+  privacy-engine:
+    build: ./privacy-engine
+    # Pas de « ports » : le service n'est joignable que par le backend, sur le réseau interne.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      PRIVACY_ENGINE_URL: http://privacy-engine:8090
+      OLLAMA_URL: http://host.docker.internal:11434   # si LLM_PROVIDER=ollama (Ollama tourne sur la machine)
+    volumes:
+      - ./backend/firebase-key.json:/app/firebase-key.json:ro
+    ports:
+      - "8080:8080"
+    depends_on:
+      privacy-engine:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend

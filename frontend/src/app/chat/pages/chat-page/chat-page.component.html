@@ -1,0 +1,54 @@
+<div class="chat">
+  <mat-toolbar class="chat__header">
+    <button
+      mat-icon-button
+      type="button"
+      class="chat__menu-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-expanded]="sidebarOpen()"
+      aria-label="Afficher la liste des utilisateurs">
+      <mat-icon aria-hidden="true">menu</mat-icon>
+    </button>
+
+    <span class="chat__hash" aria-hidden="true">#</span>
+    <span class="chat__brand">app-chat</span>
+
+    <span class="chat__spacer"></span>
+
+    <span class="chat__user">
+      <span class="chat__user-dot" aria-hidden="true"></span>
+      <span class="chat__user-name">@{{ username() }}</span>
+    </span>
+
+    <button
+        type="button"
+        (click)="i18n.toggle()"
+        class="chat__lang"
+        [attr.aria-label]="i18n.t('toggleLangLabel')">
+      {{ i18n.lang() === 'fr' ? 'EN' : 'FR' }}
+    </button>
+
+    <button mat-stroked-button (click)="onLogout()" class="chat__logout" [attr.aria-label]="i18n.t('quit')">
+      <span class="chat__logout-label">{{ i18n.t('quit') }}</span>
+    </button>
+  </mat-toolbar>
+
+  <div class="chat__content">
+    <div
+      class="chat__backdrop"
+      [class.chat__backdrop--visible]="sidebarOpen()"
+      (click)="closeSidebar()">
+    </div>
+
+    <aside class="chat__sidebar" [class.chat__sidebar--open]="sidebarOpen()">
+      <app-user-list></app-user-list>
+    </aside>
+
+    <main class="chat__main">
+      <div class="chat__messages">
+        <app-messages [messages]="messages()" [currentUsername]="username()"></app-messages>
+      </div>
+      <app-message-form (publish)="onPublish($event)"></app-message-form>
+    </main>
+  </div>
+</div>

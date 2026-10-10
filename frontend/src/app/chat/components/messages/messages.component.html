@@ -1,0 +1,63 @@
+<div #viewport class="messages-viewport">
+
+    @if (!messages() || messages().length === 0) {
+        <p class="empty">{{ i18n.t('noMessages') }}</p>
+    }
+
+    @for (m of messages(); track trackByMessageId($index, m); let i = $index) {
+
+        @if (showDateHeader(messages(), i)) {
+            <div class="date-sep">
+                {{ m.timestamp | date:'EEEE d MMMM y':undefined:i18n.locale() }}
+            </div>
+        }
+
+        <div class="message-row" [class.message-row--own]="isOwn(m)">
+            <div class="message-line">
+                <span class="avatar" [style.background]="avatarColor(m.username)" aria-hidden="true">
+                    {{ initials(m.username) }}
+                </span>
+                <span class="username" [style.color]="isOwn(m) ? null : avatarColor(m.username)">{{ m.username }}</span>
+                <span class="time">{{ m.timestamp | date:'HH:mm' }}</span>
+            </div>
+
+            <div class="message-body" [class.message-body--own]="isOwn(m)">
+                @if (m.text && m.text.trim() !== '') {
+                    <p class="text">{{ m.text }}</p>
+                }
+
+                @if (m.imageUrl) {
+                    <div class="image-wrapper">
+                        <img
+                                class="message-image"
+                                [src]="m.imageUrl"
+                                [alt]="i18n.t('sentImage')"
+                                tabindex="0"
+                                role="button"
+                                (click)="openPreview(m.imageUrl)"
+                                (keydown.enter)="openPreview(m.imageUrl)"
+                                (keydown.space)="openPreview(m.imageUrl)"
+                        />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@if (selectedImageUrl) {
+    <div
+            class="preview-overlay"
+            tabindex="0"
+            role="button"
+            (click)="closePreview()"
+            (keydown.enter)="closePreview()"
+            (keydown.space)="closePreview()"
+    >
+        <img
+                class="preview-image"
+                [src]="selectedImageUrl"
+                [alt]="i18n.t('preview')"
+        />
+    </div>
+}

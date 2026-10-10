@@ -1,0 +1,145 @@
+/* === Formulaire principal (invite façon terminal) === */
+.msg-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface-soft, #f2f0e6);
+  border-radius: var(--radius-md, 4px);
+  border: 1px solid var(--border, rgba(23, 22, 26, 0.16));
+  font-family: var(--mono, ui-monospace, monospace);
+
+  &:focus-within {
+    border-color: var(--accent, #2b59ff);
+  }
+}
+
+.msg-form__prompt {
+  flex-shrink: 0;
+  color: var(--accent, #2b59ff);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.msg-form__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink, #17161a);
+  padding: 6px 0;
+
+  &::placeholder {
+    color: var(--ink-soft, #6b6b70);
+  }
+}
+
+/* Bouton "Envoyer" */
+.btn-send {
+  flex-shrink: 0;
+  font-family: var(--mono, ui-monospace, monospace);
+  background: var(--accent, #2b59ff);
+  border: 1px solid var(--border-strong, #17161a);
+  color: white;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm, 3px);
+  box-shadow: var(--hard-shadow-sm, 2px 2px 0 #17161a);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--border-strong, #17161a);
+  }
+
+  &:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0 var(--border-strong, #17161a);
+  }
+}
+
+.btn-image {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  color: var(--ink-soft, #6b6b70);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 3px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: var(--accent, #2b59ff);
+    border-color: var(--border, rgba(23, 22, 26, 0.16));
+  }
+}
+
+.btn-image mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.image-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 10px;
+  background: var(--surface-soft, #f2f0e6);
+  border: 1px solid var(--border, rgba(23, 22, 26, 0.16));
+  border-radius: var(--radius-sm, 3px);
+  padding: 10px 14px;
+  max-width: 340px;
+  font-family: var(--mono, ui-monospace, monospace);
+}
+
+.preview-img {
+  max-width: 90px;
+  max-height: 90px;
+  object-fit: cover;
+  border-radius: var(--radius-sm, 3px);
+  border: 1px solid var(--border, rgba(23, 22, 26, 0.16));
+}
+
+.btn-clear-image {
+  font-family: var(--mono, ui-monospace, monospace);
+  border: 1px solid var(--ink, #17161a);
+  background-color: var(--surface, white);
+  color: var(--ink, #17161a);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm, 3px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: var(--accent, #2b59ff);
+    color: white;
+    border-color: var(--accent, #2b59ff);
+  }
+}
+
+@media (max-width: 480px) {
+  .msg-form {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .btn-send {
+    padding: 8px 12px;
+  }
+}

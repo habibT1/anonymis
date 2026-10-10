@@ -1,0 +1,11 @@
+<div class="scanlines" aria-hidden="true"></div>
+
+<div class="conteneur-principal">
+  @if (erreurMessageKey) {
+    <div class="notification-erreur">
+      <span class="icone-erreur">!</span>
+      <span class="texte-erreur">{{ i18n.t(erreurMessageKey) }}</span>
+    </div>
+  }
+  <app-login-form [loading]="isLoading" (login)="onLogin($event)"></app-login-form>
+</div>

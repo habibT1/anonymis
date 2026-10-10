@@ -1,0 +1,60 @@
+<form class="msg-form" [formGroup]="messageForm" (ngSubmit)="onSubmit()">
+    <span class="msg-form__prompt" aria-hidden="true">&gt;</span>
+
+    <input
+            #msgInput
+            class="msg-form__input"
+            formControlName="msg"
+            [attr.placeholder]="i18n.t('writeMessage')"
+            autocomplete="off"
+            [attr.aria-label]="i18n.t('writeMessage')"
+    />
+
+    <!-- Bouton image -->
+    <button
+            type="button"
+            class="btn-image"
+            (click)="fileInput.click()"
+            [attr.aria-label]="hasImage ? i18n.t('imageSelected') : i18n.t('chooseImage')"
+    >
+        @if (hasImage) {
+            <mat-icon>image</mat-icon>
+        } @else {
+            <mat-icon>attach_file</mat-icon>
+        }
+    </button>
+
+    <!-- input file caché -->
+    <input
+        #fileInput
+        name="file"
+        type="file"
+        style="display: none"
+        accept="image/*"
+        (change)="fileChanged($event)"
+    />
+
+    <!-- bouton envoyer -->
+    <button type="submit" class="btn-send" [attr.aria-label]="i18n.t('send')">
+        <span class="btn-send__label">{{ i18n.t('send') }}</span>
+    </button>
+</form>
+
+<!-- Aperçu d'image sélectionnée -->
+@if (previewUrl) {
+    <div class="image-preview">
+        <img
+                [src]="previewUrl"
+                [alt]="i18n.t('preview')"
+                class="preview-img"
+        />
+
+        <button
+                type="button"
+                class="btn-clear-image"
+                (click)="clearImage()"
+        >
+            {{ i18n.t('removeImage') }}
+        </button>
+    </div>
+}

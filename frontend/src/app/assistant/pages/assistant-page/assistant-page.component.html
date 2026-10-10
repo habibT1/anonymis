@@ -1,0 +1,212 @@
+<div class="app">
+  <header class="bar">
+    <button type="button" class="bar__menu" (click)="sidebarOpen.set(!sidebarOpen())"
+            [attr.aria-expanded]="sidebarOpen()" [attr.aria-label]="i18n.t('documents')">☰</button>
+    <span class="bar__brand">anonymis</span>
+
+    @if (assistant.info(); as info) {
+      <span class="bar__model" [class.bar__model--local]="info.local">
+        {{ info.model }} · {{ info.local ? i18n.t('localModel') : i18n.t('cloudModel') }}
+      </span>
+    }
+
+    <span class="bar__spacer"></span>
+
+    <div class="level" role="group" [attr.aria-label]="i18n.t('level')" [attr.title]="i18n.t('levelHint')">
+      <span class="level__label">{{ i18n.t('level') }}</span>
+      <button type="button" [class.on]="assistant.level() === 'standard'" (click)="setLevel('standard')">
+        {{ i18n.t('levelStandard') }}
+      </button>
+      <button type="button" [class.on]="assistant.level() === 'strict'" (click)="setLevel('strict')">
+        {{ i18n.t('levelStrict') }}
+      </button>
+    </div>
+
+    <span class="bar__user">@{{ username() }}</span>
+    <button type="button" class="bar__btn" (click)="i18n.toggle()" [attr.aria-label]="i18n.t('toggleLangLabel')">
+      {{ i18n.lang() === 'fr' ? 'EN' : 'FR' }}
+    </button>
+    <button type="button" class="bar__btn" (click)="logout()">{{ i18n.t('quit') }}</button>
+  </header>
+
+  <div class="body">
+    <div class="backdrop" [class.backdrop--on]="sidebarOpen()" (click)="sidebarOpen.set(false)"></div>
+
+    <!-- Documents -->
+    <aside class="docs" [class.docs--open]="sidebarOpen()"
+           [class.docs--drag]="dragOver()"
+           (dragover)="onDragOver($event)" (dragleave)="dragOver.set(false)" (drop)="onDrop($event)">
+      <h2 class="docs__title">// {{ i18n.t('documents') }}</h2>
+
+      <button type="button" class="docs__import" (click)="pickFile()" [disabled]="assistant.uploading()">
+        {{ assistant.uploading() ? i18n.t('importing') : i18n.t('importPdf') }}
+      </button>
+      <p class="docs__hint">{{ i18n.t('dropHint') }}</p>
+      <input #fileInput type="file" accept="application/pdf,.pdf" multiple hidden
+             (change)="onFiles(fileInput.files)" />
+
+      @if (uploadError()) {
+        <p class="docs__error" role="alert">{{ uploadError() }}</p>
+      }
+
+      <ul class="docs__list">
+        @for (d of assistant.documents(); track d.id) {
+          <li class="doc" [class.doc--on]="assistant.selectedIds().has(d.id)">
+            <label class="doc__main">
+              <input type="checkbox" [checked]="assistant.selectedIds().has(d.id)"
+                     (change)="assistant.toggleSelected(d.id)" [attr.aria-label]="i18n.t('includeDoc')" />
+              <span class="doc__name" [attr.title]="d.filename">{{ d.filename }}</span>
+            </label>
+            <span class="doc__meta">
+              {{ d.pageCount }} {{ i18n.t('pages') }}
+              @if (d.needsOcr) { · <span class="doc__warn">{{ i18n.t('needsOcr') }}</span> }
+            </span>
+            <button type="button" class="doc__del" (click)="remove(d.id)" [attr.aria-label]="i18n.t('deleteDoc')">×</button>
+            <button type="button" class="doc__redact" (click)="downloadRedacted(d)" [title]="i18n.t('redactHint')">
+              {{ i18n.t('redactedPdf') }}
+            </button>
+          </li>
+        } @empty {
+          <li class="docs__empty">{{ i18n.t('noDocuments') }}</li>
+        }
+      </ul>
+
+      <section class="lists">
+        <div class="lists__head">
+          <h2 class="docs__title">// {{ i18n.t('sensitiveNames') }}</h2>
+          @if (!listsOpen()) {
+            <button type="button" class="link" (click)="openLists()">{{ i18n.t('edit') }}</button>
+          }
+        </div>
+        @if (listsOpen()) {
+          <label class="lists__label" for="watch">{{ i18n.t('alwaysMask') }}</label>
+          <textarea id="watch" class="lists__input" rows="4" [(ngModel)]="watchText"
+                    placeholder="Projet Faucon : PROJET&#10;Banque Laurentienne : CLIENT"></textarea>
+          <label class="lists__label" for="allow">{{ i18n.t('neverMask') }}</label>
+          <textarea id="allow" class="lists__input" rows="3" [(ngModel)]="allowText"
+                    placeholder="Montréal&#10;Employeur"></textarea>
+          <p class="docs__hint lists__hint">{{ i18n.t('listsHint') }}</p>
+          <div class="lists__actions">
+            <button type="button" class="link" (click)="listsOpen.set(false)">{{ i18n.t('cancel') }}</button>
+            <button type="button" class="docs__import lists__save" (click)="saveLists()">{{ i18n.t('save') }}</button>
+          </div>
+        } @else {
+          <p class="lists__summary">
+            {{ assistant.watchlist().length }} {{ i18n.t('alwaysMaskShort') }} ·
+            {{ assistant.allowlist().length }} {{ i18n.t('neverMaskShort') }}
+          </p>
+        }
+      </section>
+
+      <p class="docs__privacy">{{ i18n.t('localOnly') }}</p>
+    </aside>
+
+    <!-- Conversation -->
+    <main class="chat">
+      <div class="chat__thread" #thread>
+        @for (x of assistant.exchanges(); track $index; let i = $index) {
+          <div class="msg msg--user">
+            <span class="msg__who">{{ i18n.t('you') }}</span>
+            <p class="msg__text">{{ x.question }}</p>
+          </div>
+
+          @switch (x.status) {
+            @case ('pending') {
+              <div class="msg msg--ai msg--pending">
+                <span class="msg__who">{{ i18n.t('assistant') }}</span>
+                <p class="msg__text"><span class="dots" aria-hidden="true"></span> {{ i18n.t('thinking') }}</p>
+              </div>
+            }
+
+            @case ('blocked') {
+              <div class="alert alert--block" role="alert">
+                <strong>{{ i18n.t('blockedTitle') }}</strong>
+                <p>{{ i18n.t('blockedText') }}</p>
+                @if (x.blockedTypes?.length) {
+                  <p class="alert__types">@for (t of x.blockedTypes; track t) { <code>{{ t }}</code> }</p>
+                }
+              </div>
+            }
+
+            @case ('error') {
+              <div class="alert" role="alert">
+                <strong>{{ i18n.t('errorTitle') }}</strong>
+                <p>{{ x.error }}</p>
+              </div>
+            }
+
+            @default {
+              <div class="msg msg--ai" [class.msg--preview]="x.status === 'preview'">
+                <span class="msg__who">
+                  {{ i18n.t('assistant') }}
+                  @if (x.response?.model) { <span class="msg__model">· {{ x.response?.model }}</span> }
+                </span>
+
+                @if (x.status === 'preview') {
+                  <p class="msg__notice">{{ i18n.t('previewNotice') }}</p>
+                } @else {
+                  <app-token-text class="msg__text" [text]="x.response?.answer" [plain]="true" />
+                }
+
+                <div class="msg__foot">
+                  <span class="badge">{{ x.response?.maskedTotal ?? 0 }} {{ i18n.t('masked') }} · {{ i18n.t('noLeak') }}</span>
+                  @if (x.status === 'preview') {
+                    <button type="button" class="link link--strong" (click)="confirmPreview(i, x)"
+                            [disabled]="assistant.busy()">{{ i18n.t('sendForReal') }} →</button>
+                  } @else {
+                    <button type="button" class="link" (click)="toggleAiView(i)">
+                      {{ openAiViews().has(i) ? i18n.t('hideAiView') : i18n.t('aiView') }}
+                    </button>
+                    <button type="button" class="link" (click)="exportAnswer(x)">{{ i18n.t('answerPdf') }}</button>
+                  }
+                </div>
+
+                @if (x.response?.unknownTokens?.length) {
+                  <p class="msg__warn">{{ i18n.t('unknownTokens') }} : {{ x.response?.unknownTokens?.join(', ') }}</p>
+                }
+
+                @if (openAiViews().has(i) || x.status === 'preview') {
+                  <div class="aiview">
+                    @if (x.response?.maskedByType; as counts) {
+                      <p class="aiview__counts">
+                        @for (c of counts | keyvalue; track c.key) { <code>{{ c.key }} × {{ c.value }}</code> }
+                      </p>
+                    }
+                    <h3>{{ x.status === 'preview' ? i18n.t('wouldSend') : i18n.t('sentToAi') }}</h3>
+                    <app-token-text class="aiview__box" [text]="x.response?.aiView?.sent" />
+                    @if (x.response?.aiView?.received) {
+                      <h3>{{ i18n.t('receivedFromAi') }}</h3>
+                      <app-token-text class="aiview__box" [text]="x.response?.aiView?.received" />
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        } @empty {
+          <div class="empty">
+            <p class="empty__title">{{ i18n.t('emptyTitle') }}</p>
+            <p class="empty__text">{{ i18n.t('emptyText') }}</p>
+          </div>
+        }
+      </div>
+
+      <form class="ask" (ngSubmit)="send(false)">
+        <span class="ask__prompt" aria-hidden="true">&gt;</span>
+        <textarea class="ask__input" name="question" rows="1" [(ngModel)]="question"
+                  (keydown)="onKeydown($event)" [placeholder]="i18n.t('askPlaceholder')"
+                  [attr.aria-label]="i18n.t('askPlaceholder')"></textarea>
+        <button type="button" class="ask__btn ask__btn--ghost" (click)="send(true)"
+                [disabled]="assistant.busy() || !question.trim()" [title]="i18n.t('previewHint')">
+          {{ i18n.t('previewBtn') }}
+        </button>
+        <button type="submit" class="ask__btn" [disabled]="assistant.busy() || !question.trim()">
+          {{ i18n.t('send') }}
+        </button>
+      </form>
+      @if (assistant.exchanges().length) {
+        <button type="button" class="link chat__reset" (click)="newConversation()">{{ i18n.t('newConversation') }}</button>
+      }
+    </main>
+  </div>
+</div>

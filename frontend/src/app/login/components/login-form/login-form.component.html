@@ -1,0 +1,72 @@
+<form class="formulaire-connexion" [formGroup]="loginForm" (ngSubmit)="onSubmitForm()">
+    <div class="barre-titre">
+        <span>login@app-chat</span>
+        <button
+                type="button"
+                class="bouton-langue"
+                (click)="i18n.toggle()"
+                [attr.aria-label]="i18n.t('toggleLangLabel')">
+            {{ i18n.lang() === 'fr' ? 'EN' : 'FR' }}
+        </button>
+        <span class="curseur" aria-hidden="true"></span>
+    </div>
+
+    <h2 class="titre-bienvenue">{{ i18n.t('welcome') }}<span class="point">_</span></h2>
+
+    <div class="champ-formulaire">
+        <label class="etiquette-champ" for="champ-username">{{ i18n.t('user') }}:</label>
+        <input
+                id="champ-username"
+                formControlName="username"
+                class="input-texte"
+                autocomplete="username"
+        />
+    </div>
+    @if (loginForm.get('username')?.invalid && (loginForm.get('username')?.dirty || loginForm.get('username')?.touched)) {
+        <p class="message-erreur-champ">
+            @if (loginForm.get('username')?.hasError('required')) {
+                {{ i18n.t('usernameRequired') }}
+            }
+        </p>
+    }
+
+    <div class="champ-formulaire">
+        <label class="etiquette-champ" for="champ-password">{{ i18n.t('pass') }}:</label>
+        <input
+                id="champ-password"
+                [type]="hide ? 'password' : 'text'"
+                formControlName="password"
+                class="input-texte"
+                autocomplete="current-password"
+        />
+
+        <button
+                type="button"
+                (click)="togglePassword($event)"
+                [attr.aria-label]="hide ? i18n.t('showPassword') : i18n.t('hidePassword')"
+                [attr.aria-pressed]="!hide"
+                class="bouton-visibilite"
+        >
+            <mat-icon>{{ hide ? 'visibility' : 'visibility_off' }}</mat-icon>
+        </button>
+    </div>
+    @if (loginForm.get('password')?.invalid && (loginForm.get('password')?.dirty || loginForm.get('password')?.touched)) {
+        <p class="message-erreur-champ">
+            @if (loginForm.get('password')?.hasError('required')) {
+                {{ i18n.t('passwordRequired') }}
+            }
+        </p>
+    }
+
+    <button
+            type="submit"
+            [disabled]="loginForm.invalid || loading"
+            class="bouton-connexion"
+    >
+        @if (loading) {
+            <span class="texte-chargement">{{ i18n.t('connecting') }}<span class="points-suspension" aria-hidden="true"></span></span>
+        } @else {
+            <span>{{ i18n.t('login') }}</span>
+        }
+    </button>
+</form>

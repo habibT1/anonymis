@@ -1,0 +1,27 @@
+<div class="user-list">
+  <h3 class="user-list__title">
+    <span class="user-list__prompt" aria-hidden="true">&gt;</span> {{ i18n.t('who') }}
+    @if (statuses() && statuses().length > 0) {
+      <span class="user-list__count">{{ statuses().length }}</span>
+    }
+  </h3>
+
+  <ul class="user-list__items">
+    @if (statuses() && statuses().length > 0) {
+      @for (userStatus of statuses(); track trackByUsername($index, userStatus)) {
+        <li class="user-item">
+          <span class="user-item__avatar" [style.background]="avatarColor(userStatus.username)" aria-hidden="true">{{ initials(userStatus.username) }}</span>
+          <span class="user-item__name">{{ userStatus.username }}</span>
+          <span
+            class="user-item__status"
+            [ngClass]="getStatusClass(userStatus.status)"
+            [attr.aria-label]="i18n.t(userStatus.status)">
+            <span class="user-item__dot" aria-hidden="true"></span>{{ i18n.t(userStatus.status) }}
+          </span>
+        </li>
+      }
+    } @else {
+      <li class="user-list__empty">{{ i18n.t('noUsers') }}</li>
+    }
+  </ul>
+</div>

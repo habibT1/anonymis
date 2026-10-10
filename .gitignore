@@ -1,0 +1,27 @@
+# --- Secrets : ne JAMAIS commiter ---
+firebase-key.json
+firebase-production-key.json
+*-key.json
+cookies.txt
+.env
+.env.*
+!.env.example
+
+# --- Build / caches ---
+node_modules/
+dist/
+build/
+.angular/
+.gradle/
+.firebase/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# --- Logs ---
+*.log
+
+# --- OS / IDE ---
+.DS_Store
+.idea/

@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Tout accès direct depuis un client est refusé.
+// Le backend utilise le SDK Admin de Firebase, qui ne passe pas par ces règles.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
